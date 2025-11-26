@@ -20,8 +20,7 @@ export default function TodoForm({ onAdd }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate required fields
+
     if (!formData.name.trim() || !formData.description.trim()) {
       toast.error('Name and description are required');
       return;
@@ -34,8 +33,7 @@ export default function TodoForm({ onAdd }) {
         description: formData.description.trim(),
         category: formData.category || 'general'
       });
-      
-      // Reset form after successful submission
+
       setFormData({
         name: '',
         description: '',
