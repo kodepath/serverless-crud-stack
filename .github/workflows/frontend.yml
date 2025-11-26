@@ -1,0 +1,25 @@
+name: Deploy Frontend to Vercel
+
+# Run this workflow on pushes to master (or any branch you choose)
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 3: Trigger Vercel Deploy via Deploy Hook
+      - name: Trigger Vercel Deploy
+        run: |
+          curl -X POST https://crud-72idgecmi-eveans-projects-e2d2fbc0.vercel.app
+
+      # Step 4: Optional: Output confirmation
+      - name: Confirm Deployment
+        run: echo "Vercel deployment triggered for master branch."
