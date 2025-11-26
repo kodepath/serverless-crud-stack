@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TodoForm from "../Components/TodoForm";
-import TodoList from "../components/TodoList";
+import TodoList from "../Components/TodoList";
 import { getTodos, createTodo, updateTodo, deleteTodo } from "../api/todos";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
