@@ -23,7 +23,6 @@ provider:
 custom:
   stages:
     - dev
-    - staging
     - prod
 
 functions:
