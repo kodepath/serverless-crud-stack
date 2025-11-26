@@ -3,7 +3,7 @@ name: Deploy Backend to PROD
 on:
   push:
     branches:
-      - deploy-automation
+      - master
 
 jobs:
   deploy:
