@@ -1,26 +1,42 @@
-let todos = [
-  { id: 1, title: 'Learn React', completed: false },
-  { id: 2, title: 'Build Serverless App', completed: false },
-];
+import axios from 'axios';
+import config from './config';
 
-export const getTodos = () =>
-  new Promise((resolve) => setTimeout(() => resolve([...todos]), 300));
+export const getTodos = async () => {
+  try {
+    const response = await axios.get(config.ITEMS.BASE);
+    return response.data.items || [];
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    throw error;
+  }
+};
 
-export const createTodo = (todo) =>
-  new Promise((resolve) => {
-    const newTodo = { id: Date.now(), ...todo };
-    todos.push(newTodo);
-    setTimeout(() => resolve(newTodo), 300);
-  });
+export const createTodo = async (todo) => {
+  try {
+    const response = await axios.post(config.ITEMS.BASE, todo);
+    return response.data.item;
+  } catch (error) {
+    console.error('Error creating todo:', error);
+    throw error;
+  }
+};
 
-export const updateTodo = (id, updatedTodo) =>
-  new Promise((resolve) => {
-    todos = todos.map((t) => (t.id === id ? { ...t, ...updatedTodo } : t));
-    setTimeout(() => resolve(todos.find((t) => t.id === id)), 300);
-  });
+export const updateTodo = async (id, updatedTodo) => {
+  try {
+    const response = await axios.put(config.ITEMS.BY_ID(id), updatedTodo);
+    return response.data.item;
+  } catch (error) {
+    console.error('Error updating todo:', error);
+    throw error;
+  }
+};
 
-export const deleteTodo = (id) =>
-  new Promise((resolve) => {
-    todos = todos.filter((t) => t.id !== id);
-    setTimeout(() => resolve({ success: true }), 300);
-  });
+export const deleteTodo = async (id) => {
+  try {
+    await axios.delete(config.ITEMS.BY_ID(id));
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting todo:', error);
+    throw error;
+  }
+};

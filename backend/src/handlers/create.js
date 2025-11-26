@@ -1,13 +1,15 @@
-import { DynamoDB } from 'aws-sdk';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { error as _error, success } from '../utils/responses';
+import { error as _error, success } from '../utils/responses.js';
 
-const dynamodb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient({ region: 'us-east-1' });
+const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.ITEMS_TABLE;
 
 export async function handler(event) {
   try {
-    const body = JSON.parse(event.body);
+    const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
     
     // Validation
     if (!body.name || !body.description) {
@@ -23,10 +25,12 @@ export async function handler(event) {
       updatedAt: new Date().toISOString()
     };
 
-    await dynamodb.put({
+    const command = new PutCommand({
       TableName: TABLE_NAME,
       Item: item
-    }).promise();
+    });
+
+    await docClient.send(command);
 
     return success({
       message: 'Item created successfully',
@@ -35,6 +39,6 @@ export async function handler(event) {
 
   } catch (error) {
     console.error('Error creating item:', error);
-    return _error('Failed to create item');
+    return _error(error.message || 'Internal server error');
   }
 }

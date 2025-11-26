@@ -16,7 +16,7 @@ export default function TodoItem({ todo, onToggle, onDelete }) {
             todo.completed ? 'line-through text-gray-400' : 'text-gray-800'
           }`}
         >
-          {todo.title}
+          {todo.name}
         </span>
       </div>
       <button onClick={() => onDelete(todo.id)} className="text-red-500 hover:text-red-700 transition">
