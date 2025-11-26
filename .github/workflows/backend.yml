@@ -3,7 +3,7 @@ name: Deploy Backend to PROD
 on:
   push:
     branches:
-      - master
+      - deploy-automation
 
 jobs:
   deploy:
@@ -23,7 +23,7 @@ jobs:
           node-version: 18
 
       - name: Install Serverless Framework
-        run: npm install -g serverless
+        run: npm install -g serverless@3
 
       - name: Install dependencies
         run: npm install
