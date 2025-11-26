@@ -1,11 +1,13 @@
 service: crud-api-serverless
-frameworkVersion: "3"
+# frameworkVersion: "3"
 provider:
   name: aws
   runtime: nodejs18.x
   architecture: arm64
   region: us-east-1
   stage: ${opt:stage, 'dev'}
+  httpApi:
+    cors: true
   environment:
     ITEMS_TABLE: ${self:service}-${self:provider.stage}
   iamRoleStatements:
