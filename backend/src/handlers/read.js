@@ -1,23 +1,25 @@
-import { DynamoDB } from 'aws-sdk';
-import { success, error as _error } from '../utils/responses';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { success, error as _error } from '../utils/responses.js';
 
-const dynamodb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient({ region: 'us-east-1' });
+const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.ITEMS_TABLE;
 
-export async function getAllItems(event) {
+export async function getAllItems() {
   try {
-    const result = await dynamodb.scan({
+    const command = new ScanCommand({
       TableName: TABLE_NAME
-    }).promise();
-
-    return success({
-      items: result.Items,
-      count: result.Count
     });
 
+    const result = await docClient.send(command);
+
+    return success({
+      items: result.Items || []
+    });
   } catch (error) {
-    console.error('Error fetching items:', error);
-    return _error('Failed to fetch items');
+    console.error('Error getting items:', error);
+    return _error(error.message || 'Internal server error');
   }
 }
 
@@ -25,10 +27,12 @@ export async function getItem(event) {
   try {
     const { id } = event.pathParameters;
 
-    const result = await dynamodb.get({
+    const command = new GetCommand({
       TableName: TABLE_NAME,
       Key: { itemId: id }
-    }).promise();
+    });
+
+    const result = await docClient.send(command);
 
     if (!result.Item) {
       return _error('Item not found', 404);
@@ -37,9 +41,8 @@ export async function getItem(event) {
     return success({
       item: result.Item
     });
-
   } catch (error) {
-    console.error('Error fetching item:', error);
-    return _error('Failed to fetch item');
+    console.error('Error getting item:', error);
+    return _error(error.message || 'Internal server error');
   }
 }

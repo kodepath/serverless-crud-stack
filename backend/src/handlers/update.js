@@ -1,64 +1,44 @@
-import { DynamoDB } from 'aws-sdk';
-import { error as _error, success } from '../utils/responses';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { error as _error, success } from '../utils/responses.js';
 
-const dynamodb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient({ region: 'us-east-1' });
+const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.ITEMS_TABLE;
 
 export async function handler(event) {
   try {
     const { id } = event.pathParameters;
-    const body = JSON.parse(event.body);
+    const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
 
     // Check if item exists
-    const existingItem = await dynamodb.get({
+    const getCommand = new GetCommand({
       TableName: TABLE_NAME,
       Key: { itemId: id }
-    }).promise();
+    });
+
+    const existingItem = await docClient.send(getCommand);
 
     if (!existingItem.Item) {
       return _error('Item not found', 404);
     }
 
-    const updateExpression = [];
-    const expressionAttributeNames = {};
-    const expressionAttributeValues = {};
-
-    if (body.name) {
-      updateExpression.push('#name = :name');
-      expressionAttributeNames['#name'] = 'name';
-      expressionAttributeValues[':name'] = body.name;
-    }
-
-    if (body.description) {
-      updateExpression.push('#description = :description');
-      expressionAttributeNames['#description'] = 'description';
-      expressionAttributeValues[':description'] = body.description;
-    }
-
-    if (body.category) {
-      updateExpression.push('#category = :category');
-      expressionAttributeNames['#category'] = 'category';
-      expressionAttributeValues[':category'] = body.category;
-    }
-
-    updateExpression.push('#updatedAt = :updatedAt');
-    expressionAttributeNames['#updatedAt'] = 'updatedAt';
-    expressionAttributeValues[':updatedAt'] = new Date().toISOString();
-
-    const params = {
-      TableName: TABLE_NAME,
-      Key: { itemId: id },
-      UpdateExpression: `SET ${updateExpression.join(', ')}`,
-      ExpressionAttributeNames: expressionAttributeNames,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: 'ALL_NEW'
+    const updatedItem = {
+      ...existingItem.Item,
+      ...body,
+      updatedAt: new Date().toISOString()
     };
 
-    const result = await dynamodb.update(params).promise();
+    const putCommand = new PutCommand({
+      TableName: TABLE_NAME,
+      Item: updatedItem
+    });
+
+    await docClient.send(putCommand);
 
     return success({
       message: 'Item updated successfully',
-      item: result.Attributes
+      item: updatedItem
     });
 
   } catch (error) {

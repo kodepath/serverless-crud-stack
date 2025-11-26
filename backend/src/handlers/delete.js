@@ -1,7 +1,9 @@
-import { DynamoDB } from 'aws-sdk';
-import { error as _error, success } from '../utils/responses';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { error as _error, success } from '../utils/responses.js';
 
-const dynamodb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient({ region: 'us-east-1' });
+const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.ITEMS_TABLE;
 
 export async function handler(event) {
@@ -9,19 +11,23 @@ export async function handler(event) {
     const { id } = event.pathParameters;
 
     // Check if item exists
-    const existingItem = await dynamodb.get({
+    const getCommand = new GetCommand({
       TableName: TABLE_NAME,
       Key: { itemId: id }
-    }).promise();
+    });
+
+    const existingItem = await docClient.send(getCommand);
 
     if (!existingItem.Item) {
       return _error('Item not found', 404);
     }
 
-    await dynamodb.delete({
+    const deleteCommand = new DeleteCommand({
       TableName: TABLE_NAME,
       Key: { itemId: id }
-    }).promise();
+    });
+
+    await docClient.send(deleteCommand);
 
     return success({
       message: 'Item deleted successfully'
@@ -29,6 +35,6 @@ export async function handler(event) {
 
   } catch (error) {
     console.error('Error deleting item:', error);
-    return _error('Failed to delete item');
+    return _error(error.message || 'Internal server error');
   }
 }

@@ -1,6 +1,7 @@
 {
   "name": "serverless-crud-app",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "serverless offline",
@@ -15,10 +16,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "aws-sdk": "^2.1692.0",
-    "uuid": "^13.0.0"
+    "@aws-sdk/client-dynamodb": "^3.470.0",
+    "@aws-sdk/lib-dynamodb": "^3.470.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "esbuild": "^0.27.0",
     "jest": "^30.2.0",
     "serverless": "^4.25.0",
     "serverless-offline": "^14.4.0"
